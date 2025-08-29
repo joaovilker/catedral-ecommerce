@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  catedral-api:
+    # Diz ao Compose para construir a imagem usando o Dockerfile na pasta atual
+    build: .
+    # Dá um nome fácil de identificar para o nosso container
+    container_name: catedral-api-server
+    # Mapeia a porta 3333 do PC para a porta 3333 do container
+    ports:
+      - "3333:3333"
+    # Define as variáveis de ambiente que o container precisa
+    # O valor ${DATABASE_URL} será preenchido pelo Portainer
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
