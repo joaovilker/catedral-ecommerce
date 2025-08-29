@@ -1,0 +1,18 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig to read more about this file */
+    /* Language and Environment */
+    "target": "es2016", // Pode deixar como está
+    /* Modules */
+    "module": "NodeNext", // <-- ALTERE ESTA LINHA
+    "moduleResolution": "NodeNext", // <-- E ESTA LINHA
+    /* Interop Constraints */
+    "esModuleInterop": true, // Geralmente já está assim, o que é bom
+    "forceConsistentCasingInFileNames": true,
+    /* Type Checking */
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+  }
+}

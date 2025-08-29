@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* E-commerce Design System - Minimal & Modern */
+
+@layer base {
+  :root {
+    /* Brand Colors - Minimal E-commerce Palette */
+    --background: 0 0% 95.7%; /* #f4f4f4 */
+    --foreground: 0 0% 20.4%; /* #343434 */
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 20.4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 20.4%;
+
+    /* Primary - Dark charcoal for buttons and emphasis */
+    --primary: 0 0% 20.4%; /* #343434 */
+    --primary-foreground: 0 0% 98%;
+
+    /* Secondary - Warm neutral for accents */
+    --secondary: 39 12% 91%; /* #E8E6E2 */
+    --secondary-foreground: 0 0% 20.4%;
+
+    /* Muted - Soft greys for subtle elements */
+    --muted: 0 0% 96.5%;
+    --muted-foreground: 0 0% 45.1%;
+
+    /* Accent - Subtle highlight */
+    --accent: 39 12% 91%;
+    --accent-foreground: 0 0% 20.4%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 20.4%;
+
+    --radius: 0.75rem;
+
+    /* Custom Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--background)), hsl(var(--secondary)));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
+    
+    /* Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(var(--foreground) / 0.1);
+    --shadow-medium: 0 8px 25px -5px hsl(var(--foreground) / 0.1);
+    --shadow-large: 0 25px 50px -12px hsl(var(--foreground) / 0.15);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bouncy: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

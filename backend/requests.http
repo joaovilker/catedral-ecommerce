@@ -1,0 +1,14 @@
+### Cadastrar um novo produto
+POST http://localhost:3333/products
+Content-Type: application/json
+
+{
+  "name": "Taila eu te amo!",
+  "description": "Descrição de taila eu te amo.",
+  "price": 249.90,
+  "image": "https://static.dicionariodenomesproprios.com.br/upload/facebook/t/taila-1x1.png",
+  "isNew": false
+}
+
+### Buscar todos os produtos
+GET http://localhost:3333/products
