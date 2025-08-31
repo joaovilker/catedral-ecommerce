@@ -1,27 +1,53 @@
-# Etapa 1: Base da Imagem
-# Use uma imagem oficial do Node.js. A versão 'alpine' é leve e boa para produção.
-# Substitua '18' pela versão do Node que você usa no seu projeto, se for diferente.
-FROM node:18-alpine
+# --- FASE 1: A "OFICINA DE CONSTRUÇÃO" (Builder) ---
+# Usamos uma imagem Node.js para ter todas as ferramentas de build
+FROM node:18-alpine AS builder
 
-# Etapa 2: Preparar o ambiente dentro do container
-# Cria o diretório de trabalho dentro do container
+# Define a pasta de trabalho dentro do container
 WORKDIR /app
 
-# Etapa 3: Instalar as dependências
-# Copia o package.json e o package-lock.json primeiro.
-# Isso aproveita o cache do Docker: se esses arquivos não mudarem, o 'npm install' não roda de novo em builds futuros.
+# Copia os arquivos de gerenciamento de pacotes e o tsconfig
 COPY package*.json ./
+COPY tsconfig.json ./
+
+# Instala TODAS as dependências, incluindo as de desenvolvimento para o build
 RUN npm install
 
-# Etapa 4: Copiar o código da sua aplicação
-# Copia todo o resto do código para o diretório de trabalho no container
-COPY . .
+# Copia o schema do Prisma
+COPY prisma ./prisma/
 
-# Etapa 5: Expor a porta
-# Informe ao Docker que o container vai escutar nesta porta.
-# !! IMPORTANTE !!: Troque 3000 pela porta que seu backend realmente usa.
-EXPOSE 3000
+# Copia o resto do código do nosso projeto
+COPY src ./src/
 
-# Etapa 6: Comando para iniciar a aplicação
-# Este é o comando que será executado quando o container iniciar.
-CMD [ "npm", "run", "dev:run" ]
+# Geramos o Prisma Client (essencial para o ambiente do container)
+RUN npx prisma generate
+
+# FINALMENTE, CONSTRUÍMOS O PROJETO, CRIANDO A PASTA /dist
+RUN npm run build
+
+
+# --- FASE 2: A "CAIXA DE ENTREGA" FINAL (Produção) ---
+# Começamos de uma imagem Node.js limpa e leve
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiamos os arquivos de gerenciamento de pacotes novamente
+COPY package*.json ./
+
+# Instalamos APENAS as dependências de produção, ignorando as de desenvolvimento
+RUN npm install --omit=dev
+
+# Copiamos a pasta 'dist' com o código já compilado da fase de construção
+COPY --from=builder /app/dist ./dist
+
+# Copiamos o schema do Prisma (necessário em tempo de execução)
+COPY --from=builder /app/prisma ./prisma
+
+# Copiamos o Prisma Client já gerado da fase de construção
+COPY --from=builder /app/node_modules/.prisma/client ./node_modules/.prisma/client
+
+# Expomos a porta correta que nossa aplicação usa (3333)
+EXPOSE 3333
+
+# O comando CORRETO para iniciar a aplicação em produção
+CMD [ "npm", "run", "start" ]
