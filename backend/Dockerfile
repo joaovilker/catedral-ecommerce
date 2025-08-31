@@ -1,52 +1,27 @@
-# --- FASE 1: A "OFICINA DE CONSTRUÇÃO" ---
-# Usamos uma imagem Node.js para ter todas as ferramentas de build
-FROM node:20-alpine AS builder
+# Etapa 1: Base da Imagem
+# Use uma imagem oficial do Node.js. A versão 'alpine' é leve e boa para produção.
+# Substitua '18' pela versão do Node que você usa no seu projeto, se for diferente.
+FROM node:18-alpine
 
-# Definimos a pasta de trabalho dentro do container
+# Etapa 2: Preparar o ambiente dentro do container
+# Cria o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copiamos os arquivos de gerenciamento de pacotes
+# Etapa 3: Instalar as dependências
+# Copia o package.json e o package-lock.json primeiro.
+# Isso aproveita o cache do Docker: se esses arquivos não mudarem, o 'npm install' não roda de novo em builds futuros.
 COPY package*.json ./
-
-# Instalamos TODAS as dependências, incluindo as de desenvolvimento
 RUN npm install
 
-# Copiamos o schema do Prisma
-COPY prisma ./prisma/
-
-# Copiamos o resto do código do nosso projeto
+# Etapa 4: Copiar o código da sua aplicação
+# Copia todo o resto do código para o diretório de trabalho no container
 COPY . .
 
-# Geramos o Prisma Client (essencial para o ambiente do container)
-RUN npx prisma generate
+# Etapa 5: Expor a porta
+# Informe ao Docker que o container vai escutar nesta porta.
+# !! IMPORTANTE !!: Troque 3000 pela porta que seu backend realmente usa.
+EXPOSE 3000
 
-# Executamos o build do TypeScript, que cria a pasta /dist
-RUN npm run build
-
-
-# --- FASE 2: A "CAIXA DE ENTREGA" FINAL ---
-# Começamos de uma imagem Node.js limpa e leve
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Copiamos os arquivos de gerenciamento de pacotes novamente
-COPY package*.json ./
-
-# Instalamos APENAS as dependências de produção
-RUN npm install --omit=dev
-
-# Copiamos a pasta 'dist' com o código compilado da fase de construção
-COPY --from=builder /app/dist ./dist
-
-# Copiamos o schema do Prisma (necessário em tempo de execução)
-COPY --from=builder /app/prisma ./prisma
-
-# Copiamos o Prisma Client já gerado da fase de construção
-COPY --from=builder /app/node_modules/.prisma/client ./node_modules/.prisma/client
-
-# Expomos a porta que nossa aplicação usa
-EXPOSE 3333
-
-# O comando para iniciar a aplicação
-CMD ["node", "dist/server.js"]
+# Etapa 6: Comando para iniciar a aplicação
+# Este é o comando que será executado quando o container iniciar.
+CMD [ "npm", "run", "dev:run" ]
