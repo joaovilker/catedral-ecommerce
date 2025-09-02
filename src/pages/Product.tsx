@@ -1,173 +1,111 @@
 import { useState } from "react";
-import { ArrowLeft, Heart, Share2, Star, Truck, RefreshCw, Shield } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Heart, Share2, Star, Truck, RefreshCw, Shield, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import ColorSelector from "@/components/ColorSelector";
 import SizeSelector from "@/components/SizeSelector";
-import dress1 from "@/assets/dress-1.jpg";
+import { Product } from "@/types";
 
-const Product = () => {
+// Função de busca ATUALIZADA
+const fetchProductById = async (productId: string): Promise<Product> => {
+  const apiUrl = import.meta.env.VITE_API_URL; // Lê /api do .env
+  const response = await fetch(`${apiUrl}/products/${productId}`); // Faz a chamada para /api/products/:id
+  if (!response.ok) {
+    throw new Error('Não foi possível buscar os dados do produto.');
+  }
+  return response.json();
+};
+
+const ProductPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const { data: product, isLoading, error } = useQuery<Product>({
+    queryKey: ['product', id],
+    queryFn: () => fetchProductById(id!),
+    enabled: !!id,
+  });
+
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [selectedSize, setSelectedSize] = useState("M");
   const [quantity, setQuantity] = useState(1);
-
-  const colors = [
-    { name: "Branco", value: "#ffffff" },
-    { name: "Bege", value: "#f5f5dc" },
-    { name: "Lavanda", value: "#e6e6fa" }
-  ];
-
+  const colors = [{ name: "Branco", value: "#ffffff" }, { name: "Bege", value: "#f5f5dc" }, { name: "Lavanda", value: "#e6e6fa" }];
   const sizes = ["PP", "P", "M", "G", "GG"];
 
-  const productImages = [dress1, dress1, dress1]; // Simulating multiple views
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container py-8 text-center font-inter">Carregando produto...</div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container py-8 text-center font-inter text-destructive">
+          Ocorreu um erro ou o produto não foi encontrado.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
       <div className="container py-8">
-        {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">
-          <Button variant="ghost" size="sm" className="p-0 h-auto">
+          <Link to="/collection" className="flex items-center hover:text-primary">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-          <span>/</span>
-          <span>Vestidos</span>
-          <span>/</span>
-          <span className="text-foreground">Vestido de Verão Elegante</span>
+            Voltar para Coleção
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-foreground">{product.name}</span>
         </nav>
-
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Product Images */}
           <div className="space-y-4">
             <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
-              <img 
-                src={dress1} 
-                alt="Vestido de Verão Elegante"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              {productImages.map((image, index) => (
-                <div key={index} className="aspect-[3/4] rounded-lg overflow-hidden bg-muted border-2 border-transparent hover:border-primary cursor-pointer transition-colors">
-                  <img 
-                    src={image} 
-                    alt={`View ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
             </div>
           </div>
-
-          {/* Product Info */}
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Badge variant="secondary">Novo</Badge>
+                {product.isNew && <Badge variant="secondary">Novo</Badge>}
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon">
-                    <Heart className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Share2 className="h-5 w-5" />
-                  </Button>
+                  <Button variant="ghost" size="icon"><Heart className="h-5 w-5" /></Button>
+                  <Button variant="ghost" size="icon"><Share2 className="h-5 w-5" /></Button>
                 </div>
               </div>
-              
               <div>
-                <h1 className="text-3xl font-poppins font-bold text-foreground mb-2">
-                  Vestido de Verão Elegante
-                </h1>
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                    ))}
-                  </div>
-                  <span className="text-sm text-muted-foreground">(24 avaliações)</span>
-                </div>
-                
+                <h1 className="text-3xl font-poppins font-bold text-foreground mb-2">{product.name}</h1>
                 <div className="flex items-center space-x-4 mb-6">
-                  <span className="text-3xl font-poppins font-bold text-foreground">
-                    R$ 99
-                  </span>
-                  <span className="text-xl text-muted-foreground line-through">
-                    R$ 149
-                  </span>
-                  <Badge variant="destructive">33% OFF</Badge>
+                  <span className="text-3xl font-poppins font-bold text-foreground">R$ {product.price.toFixed(2).replace('.', ',')}</span>
                 </div>
               </div>
-              
-              <p className="text-muted-foreground font-inter leading-relaxed">
-                Vestido elegante e confortável, perfeito para os dias quentes de verão. 
-                Confeccionado em tecido leve e respirável, oferece movimento e estilo para qualquer ocasião.
-              </p>
+              <p className="text-muted-foreground font-inter leading-relaxed">{product.description}</p>
             </div>
-
-            {/* Color Selection */}
-            <ColorSelector 
-              colors={colors}
-              selectedColor={selectedColor}
-              onColorChange={setSelectedColor}
-            />
-
-            {/* Size Selection */}
-            <SizeSelector 
-              sizes={sizes}
-              selectedSize={selectedSize}
-              onSizeChange={setSelectedSize}
-            />
-
-            {/* Quantity */}
+            <ColorSelector colors={colors} selectedColor={selectedColor} onColorChange={setSelectedColor} />
+            <SizeSelector sizes={sizes} selectedSize={selectedSize} onSizeChange={setSelectedSize} />
             <div className="space-y-3">
               <h4 className="text-sm font-inter font-medium text-foreground">Quantidade</h4>
               <div className="flex items-center space-x-3">
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                >
-                  -
-                </Button>
+                <Button variant="outline" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</Button>
                 <span className="w-12 text-center font-medium">{quantity}</span>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
-                >
-                  +
-                </Button>
+                <Button variant="outline" size="icon" onClick={() => setQuantity(quantity + 1)}>+</Button>
               </div>
             </div>
-
-            {/* Actions */}
             <div className="space-y-4">
-              <Button size="lg" className="w-full font-poppins">
-                Adicionar ao Carrinho
-              </Button>
-              <Button variant="outline" size="lg" className="w-full font-poppins">
-                Comprar Agora
-              </Button>
+              <Button size="lg" className="w-full font-poppins">Adicionar ao Carrinho</Button>
+              <Button variant="outline" size="lg" className="w-full font-poppins">Comprar Agora</Button>
             </div>
-
-            {/* Features */}
             <div className="space-y-4 pt-6 border-t border-border">
-              <div className="flex items-center space-x-3 text-sm">
-                <Truck className="h-5 w-5 text-primary" />
-                <span className="font-inter">Frete grátis acima de R$ 150</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <RefreshCw className="h-5 w-5 text-primary" />
-                <span className="font-inter">Troca grátis em até 30 dias</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <Shield className="h-5 w-5 text-primary" />
-                <span className="font-inter">Compra segura e protegida</span>
-              </div>
+              <div className="flex items-center space-x-3 text-sm"><Truck className="h-5 w-5 text-primary" /><span className="font-inter">Frete grátis acima de R$ 150</span></div>
+              <div className="flex items-center space-x-3 text-sm"><RefreshCw className="h-5 w-5 text-primary" /><span className="font-inter">Troca grátis em até 30 dias</span></div>
+              <div className="flex items-center space-x-3 text-sm"><Shield className="h-5 w-5 text-primary" /><span className="font-inter">Compra segura e protegida</span></div>
             </div>
           </div>
         </div>
@@ -176,4 +114,4 @@ const Product = () => {
   );
 };
 
-export default Product;
+export default ProductPage;
