@@ -1,0 +1,28 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// 1. Define a fonte de dados (nosso banco Supabase)
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL") // Lê o endereço do banco das variáveis de ambiente
+  relationMode = "prisma"
+}
+
+// 2. Define como o Prisma Client deve ser gerado
+generator client {
+  provider        = "prisma-client-js"
+  // Adicionamos esta linha para forçar o uso do npm
+  packageManager  = "npm"
+}
+
+// 3. Define o "molde" da nossa tabela de Produtos
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  price       Float
+  image       String
+  isNew       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
